@@ -255,3 +255,6 @@ CREATE TABLE IF NOT EXISTS TransaccionTarjeta (
     FOREIGN KEY (numero) REFERENCES Tarjeta(numero),
     FOREIGN KEY (codigo) REFERENCES Transaccion(codigo)
 );
+
+INSERT INTO Clave VALUES ('00000000000000000000000', 'mercado.pago', false)
+INSERT INTO CuentaBancaria VALUES ('0000000000000000000000', 'MercadoPago')

@@ -1,5 +1,6 @@
 """ Data generator for MercadoPago
 """
+import logging
 
 # pylint: disable=W0718
 # pylint: disable=W0719
@@ -12,15 +13,17 @@
 import random
 from datetime import datetime, timedelta
 from typing import List, Tuple
-from tqdm import tqdm
+# from tqdm import tqdm
 
 import faker  # type: ignore
 
 from sqlalchemy import create_engine  # type: ignore
-from sqlalchemy import text   # type: ignore
+# from sqlalchemy import text   # type: ignore
 from sqlalchemy.orm import sessionmaker   # type: ignore
 
 from td7.config import POSTGRES_CONN_STRING
+
+logger = logging.getLogger(__name__)
 
 random.seed(42)
 
@@ -34,14 +37,10 @@ pg = create_engine(POSTGRES_CONN_STRING)
 Session = sessionmaker(bind=pg)
 
 # Mercadopago.SQL
-
-# import os
-# raise Exception(os.getcwd())
-
 # Crear tablas
-with open("sql/create_tables.sql", encoding="utf-8") as f:
-    sql = f.read()
-    pg.execute(text(sql))
+# with open("sql/create_tables.sql", encoding="utf-8") as f:
+#     sql = f.read()
+#     pg.execute(text(sql))
 
 # Crear datos de prueba
 
@@ -653,9 +652,13 @@ def generate_data(
     new_data["cbs"] = []
     new_data["servs"] = []
 
-    create_cuenta_bancaria_mercadopago()
+    logger.info("Generating data")
 
-    for _ in tqdm(range(num_users), desc="Usuarios"):
+    # logger.info("Creating Cuenta Bancaria MercadoPago")
+    # create_cuenta_bancaria_mercadopago()
+
+    logger.info("Creating usuarios: %s", num_users)
+    for _ in range(num_users):
         cvu, alias, cuit, email, first_name, last_name, user_name, password = (
             create_usuario()
         )
@@ -666,16 +669,19 @@ def generate_data(
         if random.choice([True, False]):
             create_tarjeta(cvu)
 
-    for _ in tqdm(range(num_cuentas_bancarias), desc="Cuentas Bancarias"):
+    logger.info("Creating uentas Bancarias: %s", num_cuentas_bancarias)
+    for _ in range(num_cuentas_bancarias):
         cvu, alias = create_cuenta_bancaria()
         new_data["cbs"].append((cvu, alias))
 
-    for _ in tqdm(range(num_servicios), desc="Servicios"):
+    logger.info("Creating servicios: %s", num_servicios)
+    for _ in range(num_servicios):
         cvu, alias = create_proveedor_servicio()
         new_data["servs"].append((cvu, alias))
 
+    logger.info("Creating transacciones sin saldo: %s", num_transacciones_sin_saldo)
     # Random try 20 transacciones entre usuarios sin saldo (todavia no se han hecho depósitos)
-    for _ in tqdm(range(num_transacciones_sin_saldo), desc="Transacciones sin saldo"):
+    for _ in range(num_transacciones_sin_saldo):
         try:
             create_transaction_between_users(
                 random.randint(0, 100),
@@ -687,12 +693,14 @@ def generate_data(
             if "Not enough balance" in str(e):
                 pass
 
+    logger.info("Simulating time passing for %s days", timespan)
     # Simular el paso del tiempo
-    for days in tqdm(range(timespan), desc="Días"):
+    for days in range(timespan):
         today = datetime.now() - timedelta(days=days)
 
         for usr in new_data["usrs"]:
             if random.choice([True, False]):
+                logger.info("Comenzando inversión para %s", usr[0])
                 comenzar_inversion(usr[0], today)
 
         for serv in new_data["servs"]:
@@ -705,11 +713,13 @@ def generate_data(
                         "Pago de servicio",
                         today,
                     )
+                    logger.info("Pagando servicio para %s", serv[0])
                 except Exception as e:
                     if "Not enough balance" in str(e):
                         pass
 
         for usr in new_data["usrs"]:
+            logger.info("Pagando rendimientos a %s", usr[0])
             pagar_rendimientos_activos_usuario(usr[0])
 
         # Generar transacciones entre usuarios
@@ -762,6 +772,8 @@ def generate_data(
                     ),
                     fecha=today,
                 )
+
+                logger.info("Transacción entre %s y %s", sender[0], usr2[0])
             except Exception as e:
                 if "Not enough balance" in str(e):
                     pass
