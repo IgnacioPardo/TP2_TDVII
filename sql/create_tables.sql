@@ -1,6 +1,10 @@
+DROP SCHEMA public CASCADE;
+CREATE SCHEMA public;
+GRANT ALL ON SCHEMA public TO public;
+
 CREATE TABLE IF NOT EXISTS Clave (
     clave_uniforme VARCHAR(50) PRIMARY KEY,
-    alias VARCHAR(50) NOT NULL,
+    alias VARCHAR(50) NOT NULL UNIQUE,
     esVirtual BOOLEAN NOT NULL
 );
 

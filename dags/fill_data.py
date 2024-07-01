@@ -1,37 +1,16 @@
-from airflow import DAG
-from airflow.operators.python import PythonOperator
-import pendulum
-import datetime
-from td7.data_generator import DataGenerator
-from td7.schema import Schema
+"""DAG para llenar la base de datos con datos de prueba."""
 
-EVENTS_PER_DAY = 10_000
+# pylint: disable=E0401
 
+from airflow import DAG  # type: ignore
+from airflow.operators.python import PythonOperator  # type: ignore
+import pendulum  # type: ignore
 
-def generate_data(base_time: str, n: int):
-    """Generates synth data and saves to DB.
+# import datetime
+# from td7.data_generator import DataGenerator
+# from td7.schema import Schema
 
-    Parameters
-    ----------
-    base_time: strpoetry export --without-hashes --format=requirements.txt > requirements.txt
-
-        Base datetime to start events from.
-    n : int
-        Number of events to generate.
-    """
-    generator = DataGenerator()
-    schema = Schema()
-    people = generator.generate_people(100)
-    schema.insert(people, "people")
-
-    people_sample = schema.get_people(100)
-    sessions = generator.generate_sessions(
-        people_sample,
-        datetime.datetime.fromisoformat(base_time),
-        datetime.timedelta(days=1),
-        n,
-    )
-    schema.insert(sessions, "sessions")
+from td7.datagen import generate_data
 
 
 with DAG(
@@ -41,7 +20,24 @@ with DAG(
     catchup=True,
 ) as dag:
     op = PythonOperator(
-        task_id="task",
+        task_id="data_generator",
         python_callable=generate_data,
-        op_kwargs=dict(n=EVENTS_PER_DAY, base_time="{{ ds }}"),
+        # op_kwargs=dict(),
     )
+
+    # Primer OP: Generar datos
+    # Se crean cuentas
+    # de forma diaria se simula:
+    # Se deposita dinero en las cuentas
+    # Se transacciona entre las cuentas
+    # Se pone plata a rendir
+    # Se pagan los rendimientos
+
+    # Segundo OP: Branch Operator
+    # Si es el último día del mes, se cuentan las cuentas
+    # - Saldo total al final del mes
+    # Cada día se cuentan los rendimientos pagados
+
+    # - Se cuentan los rendimientos pagados por día
+    # - Se cuentan las transacciones por día
+    # - Ver queries.sql ...

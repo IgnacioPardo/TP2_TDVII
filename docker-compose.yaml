@@ -10,6 +10,7 @@ services:
       - ${AIRFLOW_PROJ_DIR:-.}/config:/opt/airflow/config
       - ${AIRFLOW_PROJ_DIR:-.}/td7:/opt/airflow/td7
       - ${AIRFLOW_PROJ_DIR:-.}/dbt_tp:/opt/airflow/dbt_tp
+      - ${AIRFLOW_PROJ_DIR:-.}/sql:/opt/airflow/sql
       - ./.env:/opt/airflow/.env
     environment:
       - AIRFLOW__CORE__LOAD_EXAMPLES=false
