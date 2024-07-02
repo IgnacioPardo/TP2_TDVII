@@ -4,7 +4,10 @@
 
 from airflow import DAG  # type: ignore
 from airflow.operators.python import PythonOperator  # type: ignore
+from airflow.operators.python import BranchPythonOperator  # type: ignore
 import pendulum  # type: ignore
+
+from nodos import nodo2, nodo3
 
 # import datetime
 # from td7.data_generator import DataGenerator
@@ -19,11 +22,6 @@ with DAG(
     schedule_interval="@daily",
     catchup=True,
 ) as dag:
-    op = PythonOperator(
-        task_id="data_generator",
-        python_callable=generate_data,
-        # op_kwargs=dict(),
-    )
 
     # Primer OP: Generar datos
     # Se crean cuentas
@@ -33,11 +31,22 @@ with DAG(
     # Se pone plata a rendir
     # Se pagan los rendimientos
 
+    op = PythonOperator(
+        task_id="data_generator",
+        python_callable=generate_data,
+        op_kwargs=dict(timespan=2),
+    )
+
     # Segundo OP: Branch Operator
     # Si es el último día del mes, se cuentan las cuentas
     # - Saldo total al final del mes
+    # - Cantidad de cuentas nuevas
+    # - Volumen de transacciones generadas
+    # - Total de rendimientos pagados
     # Cada día se cuentan los rendimientos pagados
 
-    # - Se cuentan los rendimientos pagados por día
-    # - Se cuentan las transacciones por día
-    # - Ver queries.sql ...
+    branch_op = BranchPythonOperator(
+        task_id="branch",
+        python_callable=lambda: nodo2 if pendulum.now()._last_of_month() == pendulum.now() else nodo3,
+    )
+    
