@@ -1,6 +1,7 @@
 """DAG para llenar la base de datos con datos de prueba."""
 
 # pylint: disable=E0401
+# pylint: disable=W0212
 
 from airflow import DAG  # type: ignore
 from airflow.operators.python import PythonOperator  # type: ignore
@@ -47,6 +48,23 @@ with DAG(
 
     branch_op = BranchPythonOperator(
         task_id="branch",
-        python_callable=lambda: nodo2 if pendulum.now()._last_of_month() == pendulum.now() else nodo3,
+        python_callable=(
+            lambda: (
+                "nodo2"
+                if pendulum.now()._last_of_month() == pendulum.now()
+                else "nodo3"
+            )
+        ),
     )
-    
+
+    op2 = PythonOperator(
+        task_id="nodo2",
+        python_callable=nodo2,
+    )
+
+    op3 = PythonOperator(
+        task_id="nodo3",
+        python_callable=nodo3,
+    )
+
+    _ = op >> branch_op >> [op2, op3]
