@@ -48,23 +48,23 @@ with DAG(
     # Cada día se cuentan los rendimientos pagados
 
     branch_op = BranchPythonOperator(
-        task_id="branch",
+        task_id="branch_ultimo_dia_mes",
         python_callable=(
             lambda: (
-                "nodo3"
+                "ultimo_dia_mes"
                 if pendulum.now()._last_of_month() == pendulum.now()
-                else "transaction_volume"
+                else "transaction_volume_forecast"
             )
         ),
     )
 
     transaction_vol_op = PythonOperator(
-        task_id="transaction_volume",
+        task_id="transaction_volume_forecast",
         python_callable=transaction_volume,
     )
 
     op3 = PythonOperator(
-        task_id="nodo3",
+        task_id="ultimo_dia_mes",
         python_callable=nodo3,
     )
 
