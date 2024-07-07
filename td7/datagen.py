@@ -16,9 +16,10 @@ from typing import List, Tuple
 # from tqdm import tqdm
 
 import faker  # type: ignore
+from dags.nodos import predict_transaction_volume_update_tna
 
 from sqlalchemy import create_engine  # type: ignore
-# from sqlalchemy import text   # type: ignore
+from sqlalchemy import text   # type: ignore
 from sqlalchemy.orm import sessionmaker   # type: ignore
 
 from td7.config import POSTGRES_CONN_STRING
@@ -35,6 +36,8 @@ print(fake)
 pg = create_engine(POSTGRES_CONN_STRING)
 
 Session = sessionmaker(bind=pg)
+
+curent_date = datetime.now()
 
 # Mercadopago.SQL
 # Crear tablas
@@ -175,19 +178,6 @@ def create_cuenta_bancaria() -> Tuple[str, str]:
     return cvu, alias
 
 
-def create_cuenta_bancaria_mercadopago() -> Tuple[str, str]:
-    """Crea una cuenta bancaria de MercadoPago
-
-    Returns:
-        Tuple[str, str]: CU, Alias
-    """
-    cvu = len(random_cu()) * "0"
-    alias = "MercadoPago"
-    insert_clave_uniforme(cvu, alias, False)
-    pg.execute("INSERT INTO CuentaBancaria VALUES (%s, %s)", (cvu, "MercadoPago"))
-    return cvu, alias
-
-
 def get_cuenta_bancaria_mercadopago():
     """Obtiene la cuenta bancaria de MercadoPago
 
@@ -197,7 +187,7 @@ def get_cuenta_bancaria_mercadopago():
     return pg.execute(
         """SELECT CuentaBancaria.clave_uniforme
         FROM CuentaBancaria INNER JOIN Clave ON CuentaBancaria.clave_uniforme = Clave.clave_uniforme
-        WHERE Clave.alias = 'MercadoPago'
+        WHERE Clave.alias = 'mercado.pago'
         """
     ).fetchone()[0]
 
@@ -484,6 +474,7 @@ def create_transaccion_pay_service(
 def comenzar_inversion(
     cvu: str,
     comienzo_plazo: datetime = datetime.now(),
+    current_date: datetime = datetime.now(),
 ):
     """ Comienza una inversión
 
@@ -513,18 +504,56 @@ def comenzar_inversion(
 
     # Hallar si hay un rendimiento activo
     rendimiento_activo = pg.execute(
-        "SELECT * FROM Rendimiento WHERE comienzo_plazo = CURRENT_DATE"
+        text(
+            "SELECT * FROM Rendimiento WHERE comienzo_plazo = :comienzo_plazo AND fin_plazo IS NULL AND id IN (SELECT id FROM RendimientoUsuario WHERE clave_uniforme = :cvu)"
+        ),
+        {"comienzo_plazo": comienzo_plazo, "cvu": cvu}
     ).fetchone()
 
     if rendimiento_activo:
         # Finalizar el rendimiento activo
         pg.execute(
-            "UPDATE Rendimiento SET fin_plazo = CURRENT_DATE WHERE id = %s",
-            (rendimiento_activo[0],),
+            text(
+                "UPDATE Rendimiento SET fin_plazo = :fin_plazo WHERE id = :id"
+            ),
+            {"fin_plazo": current_date, "id": rendimiento_activo[0]},
         )
 
     # Generar un nuevo rendimiento
-    tna = random.uniform(60, 80)
+    # Get valor tna from TNA table
+    res = pg.execute(
+        text(
+            "SELECT valor FROM HistoricalTNA WHERE fecha = :fecha"
+        ),
+        {"fecha": current_date}
+    ).fetchone()
+
+    tna = None
+    if res:
+        if len(res) > 0:
+            tna = res[0]
+
+    # If there is no TNA for today, get the last one
+    if not tna:
+        res = pg.execute(
+            "SELECT valor FROM HistoricalTNA ORDER BY fecha DESC LIMIT 1"
+        ).fetchone()
+
+        if res:
+            if len(res) > 0:
+                tna = res[0]
+
+    # If there is no TNA at all, set it to random.randint(60, 80)
+    if not tna:
+        tna = random.randint(60, 80)
+
+        pg.execute(
+            text(
+                "INSERT INTO HistoricalTNA VALUES (:fecha, :valor)"
+            ),
+            {"fecha": current_date, "valor": tna},
+        )
+
     monto = saldo
     fin_plazo = datetime.now() + timedelta(days=1)
 
@@ -552,7 +581,10 @@ def comenzar_inversion(
     return rendimiento_id
 
 
-def pagar_rendimientos_activos_usuario(cvu: str) -> List:
+def pagar_rendimientos_activos_usuario(
+        cvu: str,
+        current_date: datetime = datetime.now(),
+    ) -> List:
     """
     Paga los rendimientos de un usuario
 
@@ -579,10 +611,10 @@ def pagar_rendimientos_activos_usuario(cvu: str) -> List:
         pg.execute(
             """
             UPDATE Rendimiento
-            SET fecha_pago = CURRENT_DATE WHERE id = %s
+            SET fecha_pago = %s WHERE id = %s
             RETURNING id, fecha_pago, comienzo_plazo, fin_plazo, TNA, monto
             """,
-            (rendimiento[0],),
+            (current_date, rendimiento[0],),
         ).fetchone()
 
         # Añadir el rendimiento generado al saldo del usuario
@@ -647,15 +679,14 @@ def generate_data(
         timespan (int): Duración de la simulación en días
     """
 
+    global current_date
+
     new_data = {}
     new_data["usrs"] = []
     new_data["cbs"] = []
     new_data["servs"] = []
 
     logger.info("Generating data")
-
-    # logger.info("Creating Cuenta Bancaria MercadoPago")
-    # create_cuenta_bancaria_mercadopago()
 
     logger.info("Creating usuarios: %s", num_users)
     for _ in range(num_users):
@@ -696,12 +727,16 @@ def generate_data(
     logger.info("Simulating time passing for %s days", timespan)
     # Simular el paso del tiempo
     for days in range(timespan):
-        today = datetime.now() - timedelta(days=days)
+        current_date = datetime.now() - timedelta(days=days)
+        logger.info("Date: %s", current_date)
+
+        if days > 30:
+            predict_transaction_volume_update_tna()
 
         for usr in new_data["usrs"]:
             if random.choice([True, False]):
                 logger.info("Comenzando inversión para %s", usr[0])
-                comenzar_inversion(usr[0], today)
+                comenzar_inversion(usr[0], current_date, current_date)
 
         for serv in new_data["servs"]:
             if random.choice([True, False]):
@@ -711,7 +746,7 @@ def generate_data(
                         serv[1],
                         random.randint(10, 10000),
                         "Pago de servicio",
-                        today,
+                        current_date,
                     )
                     logger.info("Pagando servicio para %s", serv[0])
                 except Exception as e:
@@ -731,7 +766,7 @@ def generate_data(
                     random.choice(new_data["cbs"])[0],
                     random.randint(100, 10000),
                     "Depósito",
-                    today,
+                    current_date,
                 )
 
             # Seleccionar o un alias o un cvu
@@ -770,7 +805,7 @@ def generate_data(
                         )
                         else [""]
                     ),
-                    fecha=today,
+                    fecha=current_date,
                 )
 
                 logger.info("Transacción entre %s y %s", sender[0], usr2[0])

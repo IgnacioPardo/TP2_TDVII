@@ -9,7 +9,7 @@ from airflow.operators.python import BranchPythonOperator  # type: ignore
 from airflow.operators.generic_transfer import GenericTransfer  # type: ignore
 import pendulum  # type: ignore
 
-from nodos import transaction_volume, nodo3, get_data, forecast_transacciones
+from nodos import predict_transaction_volume_update_tna, nodo3, get_data, forecast_transacciones
 
 # import datetime
 # from td7.data_generator import DataGenerator
@@ -36,7 +36,7 @@ with DAG(
     op = PythonOperator(
         task_id="data_generator",
         python_callable=generate_data,
-        op_kwargs=dict(timespan=20),
+        op_kwargs=dict(timespan=120),
     )
 
     # Segundo OP: Branch Operator
@@ -60,7 +60,7 @@ with DAG(
 
     transaction_vol_op = PythonOperator(
         task_id="transaction_volume_forecast",
-        python_callable=transaction_volume,
+        python_callable=predict_transaction_volume_update_tna,
     )
 
     op3 = PythonOperator(

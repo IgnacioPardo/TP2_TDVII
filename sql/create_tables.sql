@@ -2,6 +2,12 @@ DROP SCHEMA public CASCADE;
 CREATE SCHEMA public;
 GRANT ALL ON SCHEMA public TO public;
 
+CREATE TABLE IF NOT EXISTS HistoricalTNA (
+    fecha DATE PRIMARY KEY NOT NULL,
+    valor FLOAT NOT NULL CHECK (valor >= 0)
+);
+
+
 CREATE TABLE IF NOT EXISTS Clave (
     clave_uniforme VARCHAR(50) PRIMARY KEY,
     alias VARCHAR(50) NOT NULL UNIQUE,
@@ -256,5 +262,19 @@ CREATE TABLE IF NOT EXISTS TransaccionTarjeta (
     FOREIGN KEY (codigo) REFERENCES Transaccion(codigo)
 );
 
-INSERT INTO Clave VALUES ('00000000000000000000000', 'mercado.pago', false)
-INSERT INTO CuentaBancaria VALUES ('0000000000000000000000', 'MercadoPago')
+-- INSERT INTO Clave VALUES ('00000000000000000000000', 'mercado.pago', false)
+-- INSERT INTO CuentaBancaria VALUES ('00000000000000000000000', 'MercadoPago')
+
+-- Insertar en Clave si no existe
+INSERT INTO Clave (clave_uniforme, alias, esVirtual)
+SELECT '00000000000000000000000', 'mercado.pago', false
+WHERE NOT EXISTS (
+    SELECT 1 FROM Clave WHERE clave_uniforme = '00000000000000000000000'
+);
+
+-- Insertar en CuentaBancaria si no existe
+INSERT INTO CuentaBancaria (clave_uniforme, banco)
+SELECT '00000000000000000000000', 'MercadoPago'
+WHERE NOT EXISTS (
+    SELECT 1 FROM CuentaBancaria WHERE clave_uniforme = '00000000000000000000000'
+);
