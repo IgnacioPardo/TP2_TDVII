@@ -6,10 +6,9 @@
 from airflow import DAG  # type: ignore
 from airflow.operators.python import PythonOperator  # type: ignore
 from airflow.operators.python import BranchPythonOperator  # type: ignore
-from airflow.operators.generic_transfer import GenericTransfer  # type: ignore
 import pendulum  # type: ignore
 
-from nodos import predict_transaction_volume_update_tna, nodo3, get_data, forecast_transacciones
+from nodos import predict_transaction_volume_update_tna, nodo3
 
 # import datetime
 # from td7.data_generator import DataGenerator

@@ -1,12 +1,10 @@
-from prophet import Prophet
+from prophet import Prophet  # type: ignore
 import pandas as pd
 from matplotlib import pyplot as plt
 
 from sqlalchemy import create_engine  # type: ignore
 from sqlalchemy import text   # type: ignore
 from sqlalchemy.orm import sessionmaker   # type: ignore
-
-from airflow import DAG, task  # type: ignore
 
 import logging
 
@@ -163,7 +161,9 @@ def update_tna(pe):
             # Update TNA for tomorrow
             tna = res["valor"]
             fecha = res["fecha"]
+
             logger.info("TNA for today: %s", tna)
+
             tna_tomorrow = tna * pe
             tna_tomorrow = min(0.5, tna_tomorrow)
 

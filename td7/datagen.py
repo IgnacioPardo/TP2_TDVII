@@ -16,11 +16,12 @@ from typing import List, Tuple
 # from tqdm import tqdm
 
 import faker  # type: ignore
-from dags.nodos import predict_transaction_volume_update_tna
 
 from sqlalchemy import create_engine  # type: ignore
 from sqlalchemy import text   # type: ignore
 from sqlalchemy.orm import sessionmaker   # type: ignore
+
+from dags.nodos import predict_transaction_volume_update_tna
 
 from td7.config import POSTGRES_CONN_STRING
 
@@ -582,9 +583,10 @@ def comenzar_inversion(
 
 
 def pagar_rendimientos_activos_usuario(
-        cvu: str,
-        current_date: datetime = datetime.now(),
-    ) -> List:
+    cvu: str,
+    current_date: datetime = datetime.now(),
+) -> List:
+
     """
     Paga los rendimientos de un usuario
 
