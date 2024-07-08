@@ -217,7 +217,7 @@ def predict_transaction_volume_update_tna():
 
     # Log the percentage error
     logger.info("Percentage error: %s", pe)
-    
+
     if pe > 0:
         tna, tna_t = update_tna(pe)
 
