@@ -53,7 +53,7 @@ with DAG(
         target_lower=pendulum.now()._last_of_month() - pendulum.duration(days=1),
     )
 
-    op3 = PythonOperator(
+    monthly_report = PythonOperator(
         task_id="ultimo_dia_mes",
         python_callable=generate_monthly_report,
     )
@@ -61,4 +61,4 @@ with DAG(
     dummy_op = DummyOperator(task_id="dummy")
 
     _ = op >> transaction_vol_op
-    _ = op >> branch_op >> [op3, dummy_op]
+    _ = op >> branch_op >> [monthly_report, dummy_op]
