@@ -17,8 +17,6 @@ python-dotenv = "^1.0.1"
 astronomer-cosmos = "^1.4.1"
 psycopg2 = "^2.9.9"
 apache-airflow-providers-postgres = "^5.11.1"
-prophet
-pyarrow
 
 [tool.poetry.group.dev.dependencies]
 black = "^24.4.2"

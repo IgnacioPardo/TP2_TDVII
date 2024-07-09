@@ -702,7 +702,7 @@ def generate_data(
         if random.choice([True, False]):
             create_tarjeta(cvu)
 
-    logger.info("Creating uentas Bancarias: %s", num_cuentas_bancarias)
+    logger.info("Creating cuentas Bancarias: %s", num_cuentas_bancarias)
     for _ in range(num_cuentas_bancarias):
         cvu, alias = create_cuenta_bancaria()
         new_data["cbs"].append((cvu, alias))

@@ -230,8 +230,160 @@ def predict_transaction_volume_update_tna():
     return forecast, pe
 
 
-def nodo3():
-    pass
+def get_total_volume(month_offset):
+    with pg.connect() as conn:
+        with conn.begin():
+            result = conn.execute(
+                text(
+                    """
+                    SELECT 
+                        SUM(monto) AS volumen_total
+                    FROM 
+                        Transaccion
+                    WHERE 
+                        fecha BETWEEN date_trunc('month', CURRENT_DATE) - INTERVAL :month_offset || ' month' 
+                        AND date_trunc('month', CURRENT_DATE) - INTERVAL :month_offset || ' month' + INTERVAL '1 month' - INTERVAL '1 day'
+                    """
+                ),
+                {"month_offset": month_offset}
+            )
+
+            row = result.fetchone()
+
+            return row.volumen_total if row else 0
+
+        
+def get_transaction_count_by_type(month_offset):
+    with pg.connect() as conn:
+        with conn.begin():
+            result = conn.execute(
+                text(
+                    """
+                    SELECT 
+                        es_con_tarjeta,
+                        COUNT(*) AS cantidad_transacciones
+                    FROM 
+                        Transaccion
+                    WHERE 
+                        fecha BETWEEN date_trunc('month', CURRENT_DATE) - INTERVAL :month_offset || ' month' 
+                        AND date_trunc('month', CURRENT_DATE) - INTERVAL :month_offset || ' month' + INTERVAL '1 month' - INTERVAL '1 day'
+                    GROUP BY 
+                        es_con_tarjeta
+                    """
+                ),
+                {"month_offset": month_offset}
+            )
+
+            res = result.fetchall()
+            transactions = {row.es_con_tarjeta: row.cantidad_transacciones for row in res}
+
+            return transactions
+        
+def get_new_accounts(month_offset):
+    with pg.connect() as conn:
+        with conn.begin():
+            result = conn.execute(
+                text(
+                    """
+                    SELECT 
+                        COUNT(*) AS cantidad_cuentas_nuevas
+                    FROM 
+                        Usuario
+                    WHERE 
+                        fecha_alta BETWEEN date_trunc('month', CURRENT_DATE) - INTERVAL :month_offset || ' month' 
+                        AND date_trunc('month', CURRENT_DATE) - INTERVAL :month_offset || ' month' + INTERVAL '1 month' - INTERVAL '1 day'
+                    """
+                ),
+                {"month_offset": month_offset}
+            )
+
+            row = result.fetchone()
+
+            return row.cantidad_cuentas_nuevas if row else 0
+
+def get_income_expense(month_offset):
+    with pg.connect() as conn:
+        with conn.begin():
+            result = conn.execute(
+                text(
+                    """
+                    SELECT 
+                        SUM(CASE WHEN c_origen.esVirtual AND NOT c_destino.esVirtual THEN monto ELSE 0 END) AS egreso_total,
+                        SUM(CASE WHEN NOT c_origen.esVirtual AND c_destino.esVirtual THEN monto ELSE 0 END) AS ingreso_total
+                    FROM 
+                        Transaccion t INNER JOIN Clave c_origen ON t.CU_Origen = c.clave_Uniforme 
+                                      INNER JOIN Clave c_destino ON t.CU_Destino = c_destino.clave_Uniforme
+                    WHERE 
+                        fecha BETWEEN date_trunc('month', CURRENT_DATE) - INTERVAL :month_offset || ' month' 
+                        AND date_trunc('month', CURRENT_DATE) - INTERVAL :month_offset || ' month' + INTERVAL '1 month' - INTERVAL '1 day'
+                    """
+                ),
+                {"month_offset": month_offset}
+            )
+
+            row = result.fetchone()
+
+            return {"ingreso_total": row.ingreso_total if row else 0, "egreso_total": row.egreso_total if row else 0}
+
+def get_credit_card_interest(month_offset):
+    with pg.connect() as conn:
+        with conn.begin():
+            result = conn.execute(
+                text(
+                    """
+                    SELECT 
+                        SUM(monto * interes) AS intereses_ganados
+                    FROM 
+                        Transaccion
+                    WHERE 
+                        es_con_tarjeta = TRUE
+                        AND fecha BETWEEN date_trunc('month', CURRENT_DATE) - INTERVAL :month_offset || ' month' 
+                        AND date_trunc('month', CURRENT_DATE) - INTERVAL :month_offset || ' month' + INTERVAL '1 month' - INTERVAL '1 day'
+                    """
+                ),
+                {"month_offset": month_offset}
+            )
+
+            row = result.fetchone()
+
+            return row.intereses_ganados if row else 0
+
+
+def generate_monthly_report():
+    # Volumen total transaccionado 
+    # Cantidad de transacciones por tipo
+    # Cantidad de cuentas nuevas
+    # Ingreso/egreso total
+    # Intereses ganados por tarjetas de credito
+
+    # este mes y cambio porcentual con el anterior
+
+    total_volume = get_total_volume(1)
+    total_volume_change = get_total_volume(2) / total_volume if total_volume > 0 else 0
+
+    total_transactions = get_transaction_count_by_type(1)
+    total_transactions_change = {key: value / total_transactions[key] for key, value in get_transaction_count_by_type(2).items()} if total_transactions else 0
+
+    new_accounts = get_new_accounts(1)
+    new_accounts_change = get_new_accounts(2) / new_accounts if new_accounts > 0 else 0
+
+    net_balance = get_income_expense(1)
+    net_balance_change = {key: value / net_balance[key] for key, value in get_income_expense(2).items()} if net_balance else 0
+
+    total_interest = get_credit_card_interest(1)
+    total_interest_change = get_credit_card_interest(2) / total_interest if total_interest > 0 else 0
+
+    dataframe = pd.DataFrame(
+        {
+            "total_volume": [total_volume, total_volume_change],
+            "total_transactions": [total_transactions, total_transactions_change],
+            "new_accounts": [new_accounts, new_accounts_change],
+            "net_balance": [net_balance, net_balance_change],
+            "total_interest": [total_interest, total_interest_change],
+        },
+    )
+
+    return dataframe
 
 
 if __name__ == "__main__":
