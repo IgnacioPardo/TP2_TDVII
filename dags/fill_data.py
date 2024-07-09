@@ -10,7 +10,7 @@ from airflow.operators.datetime import BranchDateTimeOperator  # type: ignore
 from airflow.operators.dummy import DummyOperator  # type: ignore
 import pendulum  # type: ignore
 
-from nodos import predict_transaction_volume_update_tna, nodo3
+from nodos import predict_transaction_volume_update_tna, generate_monthly_report
 
 # import datetime
 # from td7.data_generator import DataGenerator
@@ -53,12 +53,12 @@ with DAG(
         target_lower=pendulum.now()._last_of_month() - pendulum.duration(days=1),
     )
 
-    op3 = PythonOperator(
+    monthly_report = PythonOperator(
         task_id="ultimo_dia_mes",
-        python_callable=nodo3,
+        python_callable=generate_monthly_report,
     )
 
     dummy_op = DummyOperator(task_id="dummy")
 
     _ = op >> transaction_vol_op
-    _ = op >> branch_op >> [op3, dummy_op]
+    _ = op >> branch_op >> [monthly_report, dummy_op]
