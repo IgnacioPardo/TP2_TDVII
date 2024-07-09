@@ -5,15 +5,14 @@ import pathlib
 import shutil
 from datetime import datetime, timedelta
 
-from airflow import DAG
-from airflow.configuration import get_airflow_home
-from airflow.models import Variable
-from cosmos import (ExecutionConfig, ExecutionMode, ProfileConfig,
-                    ProjectConfig, RenderConfig)
-from cosmos.airflow.task_group import DbtTaskGroup
-from cosmos.constants import TestBehavior
-from cosmos.operators import DbtDocsOperator
-from cosmos.profiles import PostgresUserPasswordProfileMapping
+from airflow import DAG  # type: ignore
+from airflow.configuration import get_airflow_home  # type: ignore
+# from airflow.models import Variable  # type: ignore
+from cosmos import (ExecutionConfig, ExecutionMode, ProfileConfig, ProjectConfig, RenderConfig)  # type: ignore
+from cosmos.airflow.task_group import DbtTaskGroup  # type: ignore
+from cosmos.constants import TestBehavior  # type: ignore
+from cosmos.operators import DbtDocsOperator  # type: ignore
+from cosmos.profiles import PostgresUserPasswordProfileMapping  # type: ignore
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -83,4 +82,4 @@ with DAG(
         callback=copy_docs,
     )
 
-    dbt_task_group >> generate_dbt_docs
+    _ = dbt_task_group >> generate_dbt_docs
