@@ -5,7 +5,9 @@
 
 from airflow import DAG  # type: ignore
 from airflow.operators.python import PythonOperator  # type: ignore
-from airflow.operators.python import BranchPythonOperator  # type: ignore
+# from airflow.operators.python import BranchPythonOperator  # type: ignore
+from airflow.operators.datetime import BranchDateTimeOperator  # type: ignore
+from airflow.operators.dummy import DummyOperator  # type: ignore
 import pendulum  # type: ignore
 
 from nodos import predict_transaction_volume_update_tna, nodo3
@@ -35,26 +37,7 @@ with DAG(
     op = PythonOperator(
         task_id="data_generator",
         python_callable=generate_data,
-        op_kwargs=dict(timespan=120),
-    )
-
-    # Segundo OP: Branch Operator
-    # Si es el último día del mes, se cuentan las cuentas
-    # - Saldo total al final del mes
-    # - Cantidad de cuentas nuevas
-    # - Volumen de transacciones generadas
-    # - Total de rendimientos pagados
-    # Cada día se cuentan los rendimientos pagados
-
-    branch_op = BranchPythonOperator(
-        task_id="branch_ultimo_dia_mes",
-        python_callable=(
-            lambda: (
-                "ultimo_dia_mes"
-                if pendulum.now()._last_of_month() == pendulum.now()
-                else "transaction_volume_forecast"
-            )
-        ),
+        op_kwargs=dict(timespan=40),
     )
 
     transaction_vol_op = PythonOperator(
@@ -62,9 +45,20 @@ with DAG(
         python_callable=predict_transaction_volume_update_tna,
     )
 
+    branch_op = BranchDateTimeOperator(
+        task_id="branch_ultimo_dia_mes",
+        follow_task_ids_if_true="ultimo_dia_mes",
+        follow_task_ids_if_false="dummy",
+        target_upper=pendulum.now()._last_of_month() + pendulum.duration(days=1),
+        target_lower=pendulum.now()._last_of_month() - pendulum.duration(days=1),
+    )
+
     op3 = PythonOperator(
         task_id="ultimo_dia_mes",
         python_callable=nodo3,
     )
 
-    _ = op >> branch_op >> [transaction_vol_op, op3]
+    dummy_op = DummyOperator(task_id="dummy")
+
+    _ = op >> transaction_vol_op
+    _ = op >> branch_op >> [op3, dummy_op]
