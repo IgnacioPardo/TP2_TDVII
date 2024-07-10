@@ -21,7 +21,7 @@ from sqlalchemy import create_engine  # type: ignore
 from sqlalchemy import text   # type: ignore
 from sqlalchemy.orm import sessionmaker   # type: ignore
 
-from dags.nodos import predict_transaction_volume_update_tna
+from dags.nodo_tna_update import predict_transaction_volume_update_tna
 
 from td7.config import POSTGRES_CONN_STRING
 
