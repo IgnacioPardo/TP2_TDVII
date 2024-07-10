@@ -8,14 +8,25 @@ models:
     columns:
       - name: clave_uniforme
         description: Unique key for the user.
+        tests:
+          - unique
+          - not_null
       - name: nombre
         description: User's first name.
+        tests:
+          - not_null
       - name: apellido
         description: User's last name.
+        tests:
+          - not_null
       - name: saldo
         description: Current balance in the user's account.
+        tests:
+          - not_null
       - name: fecha_alta
         description: Date when the user account was created.
+        tests:
+          - not_null
       - name: banco
         description: Bank associated with the user's account.
 
@@ -25,12 +36,21 @@ models:
     columns:
       - name: clave_uniforme
         description: Unique key for the user.
+        tests:
+          - unique
+          - not_null
       - name: avg_tna
         description: Average Taxable Net Amount (TNA) of investments.
+        tests:
+          - not_null
       - name: total_investment
         description: Total amount invested by the user.
+        tests:
+          - not_null
       - name: total_rendimientos
         description: Total number of investment returns.
+        tests:
+          - not_null
 
   - name: service_provider_transactions_summary
     description: |
@@ -38,14 +58,25 @@ models:
     columns:
       - name: provider_id
         description: Unique identifier for the service provider.
+        tests:
+          - unique
+          - not_null
       - name: nombre_empresa
         description: Name of the company providing the service.
+        tests:
+          - not_null
       - name: categoria_servicio
         description: Category of the service provided.
+        tests:
+          - not_null
       - name: total_transactions
         description: Total number of transactions processed.
+        tests:
+          - not_null
       - name: total_amount
         description: Total monetary amount processed in transactions.
+        tests:
+          - not_null
 
   - name: user_credit_card_usage
     description: |
@@ -53,16 +84,29 @@ models:
     columns:
       - name: clave_uniforme
         description: Unique key for the user.
+        tests:
+          - unique
+          - not_null
       - name: nombre
         description: User's first name.
+        tests:
+          - not_null
       - name: apellido
         description: User's last name.
+        tests:
+          - not_null
       - name: numero
         description: Credit card number used by the user.
+        tests:
+          - not_null
       - name: total_transactions
         description: Total number of transactions made with the credit card.
+        tests:
+          - not_null
       - name: total_spent
         description: Total amount spent using the credit card.
+        tests:
+          - not_null
 
   - name: high_usage_credit_card_users
     description: |
@@ -70,9 +114,18 @@ models:
     columns:
       - name: clave_uniforme
         description: Unique key for the user.
+        tests:
+          - unique
+          - not_null
       - name: nombre
         description: User's first name.
+        tests:
+          - not_null
       - name: apellido
         description: User's last name.
+        tests:
+          - not_null
       - name: total_spent
         description: Total amount spent using the credit card.
+        tests:
+          - not_null
