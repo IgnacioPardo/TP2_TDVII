@@ -52,7 +52,7 @@ services:
       - PG_DB_USER=$POSTGRES_USER
       - PG_DB_PASSWORD=$POSTGRES_PASSWORD
       - PG_DB_DBNAME=$POSTGRES_DB_NAME
-    command: --help
+    command: deps
     depends_on:
       postgres:
         condition: service_healthy

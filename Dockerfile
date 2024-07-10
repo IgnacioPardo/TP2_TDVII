@@ -13,3 +13,4 @@ COPY td7/ /opt/airflow/td7
 COPY README.md .env /opt/airflow/
 RUN poetry install
 CMD airflow webserver --port 8080 & airflow scheduler
+RUN psql -U $POSTGRES_USER -d $POSTGRES_DB -a -f /docker-entrypoint-initdb.d/01_create_tables.sql

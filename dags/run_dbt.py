@@ -1,5 +1,7 @@
 """DAG to run our DBT project as a DAG."""
 
+# pylint: disable=E0401
+
 import logging
 import pathlib
 import shutil
@@ -7,8 +9,10 @@ from datetime import datetime, timedelta
 
 from airflow import DAG  # type: ignore
 from airflow.configuration import get_airflow_home  # type: ignore
+
 # from airflow.models import Variable  # type: ignore
-from cosmos import (ExecutionConfig, ExecutionMode, ProfileConfig, ProjectConfig, RenderConfig)  # type: ignore
+from cosmos import ExecutionConfig, ExecutionMode  # type: ignore
+from cosmos import ProfileConfig, ProjectConfig, RenderConfig  # type: ignore
 from cosmos.airflow.task_group import DbtTaskGroup  # type: ignore
 from cosmos.constants import TestBehavior  # type: ignore
 from cosmos.operators import DbtDocsOperator  # type: ignore
@@ -17,6 +21,9 @@ from cosmos.profiles import PostgresUserPasswordProfileMapping  # type: ignore
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
+POSTGRES_USER = "douglas_adams"
+POSTGRES_PASSWORD = "hitchhiker"
+POSTGRES_DB = "postgres"
 
 POSTGRES_CONN = "postgres"
 DBT_PROJECT_NAME = "dbt_tp"
@@ -32,7 +39,7 @@ DEFAULT_ARGS = {
 
 
 def copy_docs(project_dir: str):
-    # copy from project_dir/target/index.html to DBT_ROOT_PATH/target/index.htmlif it exists
+    """ copy from project_dir/target/index.html to DBT_ROOT_PATH/target/index.html if it exists """
     target_path = DBT_ROOT_PATH / "target"
     target_path.mkdir(exist_ok=True)
     for file in ["index.html", "manifest.json", "graph.gpickle", "catalog.json"]:
@@ -46,7 +53,7 @@ def copy_docs(project_dir: str):
 with DAG(
     "run_dbt",
     default_args=DEFAULT_ARGS,
-    schedule=None,  # TODO: complete aquí con lo que considere
+    schedule_interval="0 * * * *",  # hourly
     catchup=False,
     max_active_runs=1,
     tags=["dbt"],
@@ -61,7 +68,14 @@ with DAG(
         target_name="dev",
         profile_mapping=PostgresUserPasswordProfileMapping(
             conn_id=POSTGRES_CONN,
-            profile_args={"dbname": "postgres", "schema": "public"},
+            profile_args={
+                "dbname": "postgres",
+                "schema": "public",
+                "user": POSTGRES_USER,
+                "password": POSTGRES_PASSWORD,
+                "host": "postgres",
+                "port": 5432,
+            },
         ),
     )
 
