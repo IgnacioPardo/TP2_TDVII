@@ -163,3 +163,5 @@ cython_debug/
 
 logs/
 commands.sh
+dbt_tp/models/.DS_Store
+dbt_tp/.DS_Store
