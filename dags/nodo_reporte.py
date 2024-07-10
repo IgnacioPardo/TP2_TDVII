@@ -229,7 +229,7 @@ def generate_pdf_report(data):
 def generate_monthly_report():
     """ Generate the monthly report """
 
-    # Volumen total transaccionado 
+    # Volumen total transaccionado
     # Cantidad de transacciones por tipo
     # Cantidad de cuentas nuevas
     # Ingreso/egreso total
@@ -241,7 +241,10 @@ def generate_monthly_report():
     total_volume_change = get_total_volume(2) / total_volume if total_volume > 0 else 0
 
     total_transactions = get_transaction_count_by_type(1)
-    total_transactions_change = {key: value / total_transactions[key] for key, value in get_transaction_count_by_type(2).items()} if total_transactions else 0
+    total_transactions_change = {
+        key: value / total_transactions[key]
+        for key, value in get_transaction_count_by_type(2).items()
+    } if total_transactions else 0
 
     new_accounts = get_new_accounts(1)
     new_accounts_change = get_new_accounts(2) / new_accounts if new_accounts > 0 else 0
