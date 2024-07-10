@@ -129,3 +129,18 @@ models:
         description: Total amount spent using the credit card.
         tests:
           - not_null
+  - name: all_claves
+    description: |
+      Materialized view that aggregates all instances of clave_uniforme, CU, CU_Origen, and CU_Destino across the database.
+    columns:
+      - name: clave
+        description: | 
+          Unique key for the user.
+          Empieza con "0"
+          Seguido por al menos 1 dígito, como máximo 3
+          Seguido por "0"
+          Seguido por al menos 1 dígito, como máximo 4
+          Seguido por 1 dígito
+          Seguido por al menos 13 dígitos, como máximo 14
+        tests:
+          - not_null
