@@ -1,0 +1,78 @@
+version: 2
+
+models:
+
+  - name: user_account_balances
+    description: |
+      Model to calculate user account balances including bank details.
+    columns:
+      - name: clave_uniforme
+        description: Unique key for the user.
+      - name: nombre
+        description: User's first name.
+      - name: apellido
+        description: User's last name.
+      - name: saldo
+        description: Current balance in the user's account.
+      - name: fecha_alta
+        description: Date when the user account was created.
+      - name: banco
+        description: Bank associated with the user's account.
+
+  - name: user_investment_performance_summary
+    description: |
+      Model to summarize user investment performance.
+    columns:
+      - name: clave_uniforme
+        description: Unique key for the user.
+      - name: avg_tna
+        description: Average Taxable Net Amount (TNA) of investments.
+      - name: total_investment
+        description: Total amount invested by the user.
+      - name: total_rendimientos
+        description: Total number of investment returns.
+
+  - name: service_provider_transactions_summary
+    description: |
+      Model to summarize transactions for service providers.
+    columns:
+      - name: provider_id
+        description: Unique identifier for the service provider.
+      - name: nombre_empresa
+        description: Name of the company providing the service.
+      - name: categoria_servicio
+        description: Category of the service provided.
+      - name: total_transactions
+        description: Total number of transactions processed.
+      - name: total_amount
+        description: Total monetary amount processed in transactions.
+
+  - name: user_credit_card_usage
+    description: |
+      Model to summarize credit card usage by users.
+    columns:
+      - name: clave_uniforme
+        description: Unique key for the user.
+      - name: nombre
+        description: User's first name.
+      - name: apellido
+        description: User's last name.
+      - name: numero
+        description: Credit card number used by the user.
+      - name: total_transactions
+        description: Total number of transactions made with the credit card.
+      - name: total_spent
+        description: Total amount spent using the credit card.
+
+  - name: high_usage_credit_card_users
+    description: |
+      Model to identify users with high credit card usage.
+    columns:
+      - name: clave_uniforme
+        description: Unique key for the user.
+      - name: nombre
+        description: User's first name.
+      - name: apellido
+        description: User's last name.
+      - name: total_spent
+        description: Total amount spent using the credit card.
