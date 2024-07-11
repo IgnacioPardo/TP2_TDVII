@@ -49,7 +49,7 @@ with DAG(
 
     branch_op = BranchDateTimeOperator(
         task_id="branch_ultimo_dia_mes",
-        follow_task_ids_if_true="ultimo_dia_mes",
+        follow_task_ids_if_true="generate_monthly_report",
         follow_task_ids_if_false="dummy",
         # target_upper=pendulum.now()._last_of_month() + pendulum.duration(days=1),
         # target_lower=pendulum.now()._last_of_month() - pendulum.duration(days=1),
@@ -58,7 +58,7 @@ with DAG(
     )
 
     monthly_report = PythonOperator(
-        task_id="ultimo_dia_mes",
+        task_id="generate_monthly_report",
         python_callable=generate_monthly_report,
     )
 
