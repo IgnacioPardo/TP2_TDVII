@@ -226,7 +226,11 @@ justificación de la cadencia?
 
 ## 3. Enriquecimiento de Datos con DBT
 
-Modelos DBT:
+Los siguientes modelos de DBT que desarrollamos se ejecutan cada hora para mantener actualizados los datos y garantizar la disponibilidad de información en tiempo real.
+
+La orquestación de los modelos DBT se realiza a través de Airflow, que ejecuta los modelos en el orden correcto y gestiona las dependencias entre ellos. El siguiente DAG muestra el flujo de los modelos DBT:
+
+![DAG DBT](dag_dbt_img.png)
 
 ### Uso de tarjetas de crédito por usuario: user_credit_card_usage
 
