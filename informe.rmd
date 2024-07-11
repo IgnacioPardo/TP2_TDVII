@@ -37,7 +37,7 @@ En este informe se presenta la arquitectura, los flujos de datos y los procesos 
     - [Predicción de volumen de transacciones](#predicción-de-volumen-de-transacciones)
     - [Branch si es el último día del mes](#branch-si-es-el-último-día-del-mes)
     - [Reporte de fin de mes](#reporte-de-fin-de-mes)
-    - [email_report](#email_report)
+    - [Email del reporte mensual](#email-del-reporte-mensual)
   - [3. Enriquecimiento de Datos con DBT](#3-enriquecimiento-de-datos-con-dbt)
     - [Uso de tarjetas de crédito por usuario: user_credit_card_usage](#uso-de-tarjetas-de-crédito-por-usuario-user_credit_card_usage)
     - [Usuarios con alto uso de tarjetas de crédito: high_usage_credit_card_users](#usuarios-con-alto-uso-de-tarjetas-de-crédito-high_usage_credit_card_users)
@@ -215,7 +215,7 @@ El operador genera un reporte mensual con algunas métricas sobre la aplicación
 
 **Cambio Porcentual**: Calcula el cambio porcentual en los intereses ganados comparado con el mes anterior.
 
-### email_report
+### Email del reporte mensual
 <br>
 
 Una vez generado el reporte mensual, el mismo se envía por email a quien se haya configurado en el operador. El reporte se envía en formato PDF.
