@@ -14,10 +14,6 @@ import pendulum  # type: ignore
 from nodo_tna_update import predict_transaction_volume_update_tna
 from nodo_reporte import generate_monthly_report
 
-# import datetime
-# from td7.data_generator import DataGenerator
-# from td7.schema import Schema
-
 from td7.datagen import generate_data
 
 
