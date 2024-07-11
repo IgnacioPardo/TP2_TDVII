@@ -663,6 +663,7 @@ def generate_data(
     num_cuentas_bancarias: int = 100,
     num_servicios: int = 20,
     num_transacciones_sin_saldo: int = 20,
+    transacciones_entre_usuarios_diarias=random.randint(5, 20),
     timespan: int = 1,
 ):
     """Genera datos de prueba
@@ -672,6 +673,7 @@ def generate_data(
         num_cuentas_bancarias (int): Número de cuentas bancarias
         num_servicios (int): Número de servicios
         num_transacciones_sin_saldo (int): Número de transacciones sin saldo
+        transacciones_entre_usuarios_diarias (int): Número de transacciones entre usuarios diarias
         timespan (int): Duración de la simulación en días
     """
 
@@ -755,7 +757,7 @@ def generate_data(
             pagar_rendimientos_activos_usuario(usr[0])
 
         # Generar transacciones entre usuarios
-        for _ in range(random.randint(5, 20)):
+        for _ in range(transacciones_entre_usuarios_diarias):
             # Para todos los usuarios entrar plata al sistema
             for usr in new_data["usrs"]:
                 create_transaccion_deposit(
