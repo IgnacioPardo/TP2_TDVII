@@ -1,3 +1,9 @@
+-- create_tables se corre on docker-compose up
+-- se dropea el schema public y todos sus objetos para evitar conflictos
+-- de todas formas los CREATE TABLE IF NOT EXISTS y CREATE OR REPLACE FUNCTION evitan que se creen tablas que ya existen
+-- No existe un "CREATE OR REPLACE TRIGGER" simple de implementar, por lo que droppear el schema es la mejor opcion
+-- ya que tambien se vuelven a generar los datos a fines de este proyecto
+
 DROP SCHEMA public CASCADE;
 CREATE SCHEMA public;
 GRANT ALL ON SCHEMA public TO public;
@@ -261,9 +267,6 @@ CREATE TABLE IF NOT EXISTS TransaccionTarjeta (
     FOREIGN KEY (numero) REFERENCES Tarjeta(numero),
     FOREIGN KEY (codigo) REFERENCES Transaccion(codigo)
 );
-
--- INSERT INTO Clave VALUES ('00000000000000000000000', 'mercado.pago', false)
--- INSERT INTO CuentaBancaria VALUES ('00000000000000000000000', 'MercadoPago')
 
 -- Insertar en Clave si no existe
 INSERT INTO Clave (clave_uniforme, alias, esVirtual)
