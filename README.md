@@ -1,5 +1,11 @@
-# Template para TP
+# Trabajo Práctico 2 - TDVII - LTD - UTDT
 
+## Integrantes
+
+- Ignacio Pardo | 21R1160 | [ipardo@mail.utdt.edu](mailto:ipardo@mail.utdt.edu)
+- Juan Ignacio Silvestri | 21Q111 | [jsilvestri@mail.utdt.edu](mailto:jsilvestri@mail.utdt.edu)
+
+[Link al Informe](https://github.com/IgnacioPardo/TP2_TDVII/blob/027f507e57b7c34011382553b30ab076d7662d6c/informe.pdf)
 
 ## Estado
 
@@ -8,8 +14,7 @@
 - [x] Proyecto DBT
 - [x] DAG de generación de datos
 - [x] DAG de transformación de datos con DBT
-- [ ] Chequear si es más liviana la imagen con pip sobre poetry
-
+- [x] Informe
 
 ## Instrucciones para correr sin Docker
 
@@ -31,9 +36,6 @@ airflow webserver --port 8080 & airflow scheduler &
 ```
 docker compose up -d
 ```
-
-¡Vieron que es más sencillo!
-
 
 ## Pasos para desarrollar el TP
 
