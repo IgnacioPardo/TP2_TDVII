@@ -145,9 +145,9 @@ _¿Cuáles son los usos que tienen los datos en las distintas etapas de procesam
 
 _¿Cómo es la gobernanza del dato? ¿Cuáles son los roles y qué tipos de permisos tienen sobre los datos?_
 
-- Roles y permisos: Administrador de Datos: Acceso completo para gestión y mantenimiento de la base de datos.
+- Administrador de Datos: Acceso completo para gestión y mantenimiento de la base de datos.
 - Analista de Datos: Acceso a datos transformados y reportes, capacidad para ejecutar queries.
-- Usuario Final: Acceso a reportes y dashboards, con permisos de solo lectura.
+- Usuario Final: Acceso a datos utilizados por la aplicación, con permisos de solo lectura.
 
 \newpage
 
