@@ -89,7 +89,7 @@ Para cada día simulado:
 - Se realizan transacciones entre usuarios seleccionados al azar, manejando posibles errores como la falta de saldo. La cantidad de transacciones por día es aleatoria.
 - Si han pasado más de 30 días, se realiza una predicción del volumen de transacciones y se actualizan las tasas de interés anuales. Esto luego se correría de forma diaria como parte del DAG de Airflow asi que tambien lo simulamos de forma diaria.
 
-Todos los datos tienen una cadencia diaria _(no estoy seguro de esto)_, aunque las transacciones y rendimientos se generan a una tasa mucho mas alta. Los datos llegan en formato JSON a través de una API. Se espera un volumen elevado de datos, en particular de transacciones, cercano a 300 transacciones por segundo.
+Los datos de transacciones y rendimientos se generan constantemente a lo largo del día. Los datos llegan en formato JSON a través de una API. Se espera un volumen elevado de datos, en particular de transacciones, cercano a 300 transacciones por segundo.
 
 ### Modelado de Datos - Trabajo Práctico 1 + Correcciones
 
@@ -220,7 +220,7 @@ El operador genera un reporte mensual con algunas métricas sobre la aplicación
 
 Una vez generado el reporte mensual, el mismo se envía por email a quien se haya configurado en el operador. El reporte se envía en formato PDF.
 
-justificación de la cadencia?
+Decidimos implementarlo con una cadencia diaria dado que genera reportes y predicciones que no necesitan mayor frecuencia. 
 
 \newpage
 
