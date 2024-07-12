@@ -132,10 +132,10 @@ Todas las claves utilizadas en la plataforma siguen el formato de Clave Uniforme
 _¿Cómo es el linaje de los datos desde su origen hasta que las distintas aplicaciones los consumen? ¿Cómo son los procesos intermedios y qué patrones siguen?_
 
 1. Generación de datos: los datos se generan a partir de tres sistemas: procesamiento de pagos, usuarios y rendimientos. Estos sistemas son los que se comunican con el usuario final y procesan las acciones que éstos realizan.
-2. Carga de Datos en Postgres: Los datos generados se cargan en una base de datos Postgres.
-3. DAG de Airflow: Se ejecuta un DAG de Airflow que procesa los datos generados y los transforma para generar métricas, predicciones y reportes.
-4. Transformaciones con DBT: Los datos cargados se transforman para obtener información útil y generar reportes.
-5. Consumo por aplicación: Los datos transformados son consumidos por aplicaciones de análisis y reportes al igual que por la aplicación de los usuarios.
+2. Carga de datos en Postgres: los datos generados se cargan en una base de datos Postgres.
+3. DAG de Airflow: se ejecuta un DAG de Airflow que procesa los datos generados y los transforma para generar métricas, predicciones y reportes.
+4. Transformaciones con DBT: los datos cargados se transforman para obtener información útil y generar reportes.
+5. Consumo por aplicación: los datos transformados son consumidos por aplicaciones de análisis y reportes al igual que por la aplicación de los usuarios.
 
 ### Usos de los datos en las distintas etapas
 
@@ -145,9 +145,9 @@ _¿Cuáles son los usos que tienen los datos en las distintas etapas de procesam
 
 _¿Cómo es la gobernanza del dato? ¿Cuáles son los roles y qué tipos de permisos tienen sobre los datos?_
 
-- Administrador de Datos: Acceso completo para gestión y mantenimiento de la base de datos.
-- Analista de Datos: Acceso a datos transformados y reportes, capacidad para ejecutar queries.
-- Usuario Final: Acceso a datos utilizados por la aplicación, con permisos de solo lectura.
+Dentro de la organización existen distintos equipos y servicios que requieren acceso de lectura a los datos. Para tener un estricto control sobre el acceso a los datos se definen roles dentro de tres grupos: Administrador de la BD, Usuario final y Análisis. Dentro da cada grupo se definen roles específicos que otrogan los permisos necesarios para sus funciones. Dentro de Administrador de BD van a estar los roles con mayores permisos para poder administrar el servicio, aunque siempre limitados a la necesidad de ese rol. Dentro de Usuario final van a estar principalmente los sistemas que interactuan con la aplicación de los usuarios; estos roles serán los que tendrán acceso a información sensible del usuario. Finalmente dentro de Análisis van a estar los roles principalmente de los equipos internos de la organización, que tendrán acceso a información más procesada y menos cruda, sin poder acceder a los datos sensibles de los usuarios.  
+
+Administrador del Sistema: Analista de Datos:Usuario Final:
 
 \newpage
 
