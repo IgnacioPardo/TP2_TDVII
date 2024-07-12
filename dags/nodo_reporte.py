@@ -27,7 +27,10 @@ pg = create_engine(POSTGRES_CONN_STRING)
 Session = sessionmaker(bind=pg)
 
 
-def get_total_volume(month_offset):
+def get_total_volume(
+        month_offset,
+        fecha=pd.Timestamp.now().date(),
+    ):
     result = pg.execute(
         text(
             """
@@ -40,8 +43,8 @@ def get_total_volume(month_offset):
                 AND fecha < :upper_fecha
             """
         ),
-        lower_fecha=pd.Timestamp.now().date() - pd.DateOffset(months=month_offset),
-        upper_fecha=pd.Timestamp.now().date() + pd.DateOffset(months=month_offset),
+        lower_fecha=fecha - pd.DateOffset(months=month_offset),
+        upper_fecha=fecha + pd.DateOffset(months=month_offset),
     )
 
     row = result.fetchone()
@@ -49,7 +52,10 @@ def get_total_volume(month_offset):
     return row.volumen_total if row else 0
 
 
-def get_transaction_count_by_type(month_offset):
+def get_transaction_count_by_type(
+        month_offset,
+        fecha=pd.Timestamp.now().date(),
+    ):
     """ Get the transaction count by type"""
 
     result = pg.execute(
@@ -67,8 +73,8 @@ def get_transaction_count_by_type(month_offset):
                 es_con_tarjeta
             """
         ),
-        lower_fecha=pd.Timestamp.now().date() - pd.DateOffset(months=month_offset),
-        upper_fecha=pd.Timestamp.now().date() + pd.DateOffset(months=month_offset),
+        lower_fecha=fecha - pd.DateOffset(months=month_offset),
+        upper_fecha=fecha + pd.DateOffset(months=month_offset),
     )
 
     res = result.fetchall()
@@ -77,7 +83,8 @@ def get_transaction_count_by_type(month_offset):
     return transactions
 
 
-def get_new_accounts(month_offset):
+def get_new_accounts(month_offset, 
+                     fecha=pd.Timestamp.now().date()):
     """ Get the number of new accounts in the last month"""
 
     result = pg.execute(
@@ -92,8 +99,8 @@ def get_new_accounts(month_offset):
                 AND fecha_alta < :upper_fecha
             """
         ),
-        lower_fecha=pd.Timestamp.now().date() - pd.DateOffset(months=month_offset),
-        upper_fecha=pd.Timestamp.now().date() + pd.DateOffset(months=month_offset),
+        lower_fecha=fecha - pd.DateOffset(months=month_offset),
+        upper_fecha=fecha + pd.DateOffset(months=month_offset),
     )
 
     row = result.fetchone()
@@ -101,7 +108,9 @@ def get_new_accounts(month_offset):
     return row.cantidad_cuentas_nuevas if row else 0
 
 
-def get_income_expense(month_offset):
+def get_income_expense(month_offset,
+                          fecha=pd.Timestamp.now().date()
+                       ):
     """ Get the total income and expense in the last month """
 
     result = pg.execute(
@@ -119,8 +128,8 @@ def get_income_expense(month_offset):
                 AND fecha < :upper_fecha
             """
         ),
-        lower_fecha=pd.Timestamp.now().date() - pd.DateOffset(months=month_offset),
-        upper_fecha=pd.Timestamp.now().date() + pd.DateOffset(months=month_offset),
+        lower_fecha=fecha - pd.DateOffset(months=month_offset),
+        upper_fecha=fecha + pd.DateOffset(months=month_offset),
     )
 
     row = result.fetchone()
@@ -128,7 +137,9 @@ def get_income_expense(month_offset):
     return {"ingreso_total": row.ingreso_total if row else 0, "egreso_total": row.egreso_total if row else 0}
 
 
-def get_credit_card_interest(month_offset):
+def get_credit_card_interest(month_offset,
+                             fecha=pd.Timestamp.now().date()
+                            ):
     """ Get the total interest earned from credit cards in the last month """
 
     result = pg.execute(
@@ -144,8 +155,8 @@ def get_credit_card_interest(month_offset):
                 AND fecha < :upper_fecha
             """
         ),
-        lower_fecha=pd.Timestamp.now().date() - pd.DateOffset(months=month_offset),
-        upper_fecha=pd.Timestamp.now().date() + pd.DateOffset(months=month_offset),
+        lower_fecha=fecha - pd.DateOffset(months=month_offset),
+        upper_fecha=fecha + pd.DateOffset(months=month_offset),
     )
 
     row = result.fetchone()
@@ -153,7 +164,8 @@ def get_credit_card_interest(month_offset):
     return row.intereses_ganados if row else 0
 
 
-def generate_pdf_report(data):
+def generate_pdf_report(data, logical_date):
+    fecha = logical_date
     """ Generate a PDF report with the data
 
     Args:
@@ -173,7 +185,7 @@ def generate_pdf_report(data):
     pdf.set_font("Helvetica", size=12)
 
     # Title
-    pdf.cell(200, 10, f"**Monthly Report** - {pd.Timestamp.now().date()}", align="C", markdown=True)
+    pdf.cell(200, 10, f"**Monthly Report** - {fecha}", align="C", markdown=True)
 
     # Total volume
     pdf.ln(10)
@@ -226,8 +238,10 @@ def generate_pdf_report(data):
     pdf.output("monthly_report.pdf")
 
 
-def generate_monthly_report():
+def generate_monthly_report(logical_date):
     """ Generate the monthly report """
+
+    fecha = logical_date
 
     # Volumen total transaccionado
     # Cantidad de transacciones por tipo
@@ -237,34 +251,40 @@ def generate_monthly_report():
 
     # este mes y cambio porcentual con el anterior
 
-    total_volume = get_total_volume(1)
-    total_volume_change = get_total_volume(2) / total_volume if total_volume > 0 else 0
+    total_volume = get_total_volume(1, fecha)
+    total_volume_change = (
+        get_total_volume(2, fecha) / total_volume if total_volume > 0 else 0
+    )
 
-    total_transactions = get_transaction_count_by_type(1)
-    total_transactions_change = {
-        key: value / total_transactions[key]
-        for key, value in get_transaction_count_by_type(2).items()
-    } if total_transactions else 0
+    total_transactions = get_transaction_count_by_type(1, fecha)
+    total_transactions_change = (
+        {
+            key: value / total_transactions[key]
+            for key, value in get_transaction_count_by_type(2, fecha).items()
+        }
+        if total_transactions
+        else 0
+    )
 
-    new_accounts = get_new_accounts(1)
-    new_accounts_change = get_new_accounts(2) / new_accounts if new_accounts > 0 else 0
+    new_accounts = get_new_accounts(1, fecha)
+    new_accounts_change = (
+        get_new_accounts(2, fecha) / new_accounts if new_accounts > 0 else 0
+    )
 
-    net_balance = get_income_expense(1)
-    net_balance_change = {
-        key: (
-            value / net_balance[key]
-            if net_balance[key] != 0
-            else 0
-        )
-        for key, value in get_income_expense(2).items()
-    } if net_balance else 0
+    net_balance = get_income_expense(1, fecha)
+    net_balance_change = (
+        {
+            key: (value / net_balance[key] if net_balance[key] != 0 else 0)
+            for key, value in get_income_expense(2, fecha).items()
+        }
+        if net_balance
+        else 0
+    )
 
-    total_interest = get_credit_card_interest(1)
+    total_interest = get_credit_card_interest(1, fecha)
 
     total_interest_change = (
-        get_credit_card_interest(2) / total_interest
-        if total_interest > 0
-        else 0
+        get_credit_card_interest(2, fecha) / total_interest if total_interest > 0 else 0
     )
 
     data = {
@@ -280,6 +300,6 @@ def generate_monthly_report():
 
     # Save report as pdf
 
-    generate_pdf_report(data)
+    generate_pdf_report(data, fecha)
 
     return data

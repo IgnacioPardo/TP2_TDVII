@@ -2,10 +2,11 @@
 
 # pylint: disable=E0401
 # pylint: disable=W0212
+import logging
 
 from airflow import DAG  # type: ignore
 from airflow.operators.python import PythonOperator  # type: ignore
-# from airflow.operators.python import BranchPythonOperator  # type: ignore
+from airflow.operators.python import BranchPythonOperator  # type: ignore
 from airflow.operators.datetime import BranchDateTimeOperator  # type: ignore
 from airflow.operators.dummy import DummyOperator  # type: ignore
 from airflow.operators.email import EmailOperator  # type: ignore
@@ -16,10 +17,50 @@ from nodo_reporte import generate_monthly_report
 
 from td7.datagen import generate_data
 
+logger = logging.getLogger(__name__)
+
+# Si la start_date es ayer,
+# se puede pasar el timespan al generator
+# y se generan los datos desde timespan dias antes hasta ayer.
+
+# Otra opcion es setear la start_date a hoy - timespan dias
+# y al generator pasarle 1, para que cada dia genere un dia de datos.
+
+SIM_TIMESPAN = 60
+START_DATE = pendulum.now()
+
+SIM_OPTION = "AIRFLOW"
+# SIM_OPTION = "FOR-LOOP"  # Cambiar a FOR-LOOP para testear sin Airflow
+
+if SIM_OPTION == "AIRFLOW":
+    START_DATE = pendulum.now() - pendulum.duration(days=SIM_TIMESPAN)
+    SIM_TIMESPAN = 1
+
+GENERATOR_KWARGS = {
+    "start_date": START_DATE,
+}
+if SIM_OPTION == "FOR-LOOP":
+    GENERATOR_KWARGS = {"timespan": SIM_TIMESPAN}
+
+
+def sim_branch_fn(logical_date, ds):
+    """Determina si es el último día del mes en simulación"""
+
+    logger.info("Logical date: %s", logical_date)
+    logger.info("DS: %s", ds)
+    logger.info("Last of month: %s", logical_date._last_of_month())
+
+    return (
+        "generate_monthly_report"
+        if logical_date == logical_date._last_of_month()
+        or ds == logical_date._last_of_month().format("YYYY-MM-DD")
+        else "dummy"
+    )
+
 
 with DAG(
     "fill_data",
-    start_date=pendulum.datetime(2024, 6, 1, tz="UTC"),
+    start_date=START_DATE,
     schedule_interval="@daily",
     catchup=True,
 ) as dag:
@@ -35,7 +76,7 @@ with DAG(
     op = PythonOperator(
         task_id="data_generator",
         python_callable=generate_data,
-        op_kwargs=dict(timespan=40),
+        op_kwargs=GENERATOR_KWARGS,
     )
 
     transaction_vol_op = PythonOperator(
@@ -46,14 +87,20 @@ with DAG(
     branch_op = BranchDateTimeOperator(
         task_id="branch_ultimo_dia_mes",
         follow_task_ids_if_true="generate_monthly_report",
-        follow_task_ids_if_false="dummy",
-
+        follow_task_ids_if_false="sim_branch",
         target_upper=pendulum.now()._last_of_month() + pendulum.duration(days=1),
         target_lower=pendulum.now()._last_of_month() - pendulum.duration(days=1),
-
         # Para testear sin esperar al último día del mes
         # target_upper=pendulum.now() + pendulum.duration(days=1),
         # target_lower=pendulum.now() - pendulum.duration(days=1),
+    )
+
+    # Si se está simulando el paso del tiempo a partir de la start_date del DAG
+    # Utilizamos la fecha lógica del DAG para determinar si es el último día del mes
+    # Y replicar lo que haría el BranchDateTimeOperator
+    sim_branch_op = BranchPythonOperator(
+        task_id="sim_branch",
+        python_callable=sim_branch_fn,
     )
 
     monthly_report = PythonOperator(
@@ -79,5 +126,6 @@ with DAG(
     )
 
     _ = op >> transaction_vol_op
-    _ = op >> branch_op >> [monthly_report, dummy_op]
+    _ = op >> branch_op >> [monthly_report, sim_branch_op]
+    _ = sim_branch_op >> [monthly_report, dummy_op]
     _ = monthly_report >> email_report_op

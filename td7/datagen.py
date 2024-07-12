@@ -549,7 +549,7 @@ def comenzar_inversion(
         )
 
     monto = saldo
-    fin_plazo = datetime.now() + timedelta(days=1)
+    fin_plazo = curr_date + timedelta(days=1)
 
     pg.execute(
         """INSERT INTO Rendimiento (comienzo_plazo, fin_plazo, TNA, monto)
@@ -665,6 +665,7 @@ def generate_data(
     num_transacciones_sin_saldo: int = 20,
     transacciones_entre_usuarios_diarias=random.randint(5, 20),
     timespan: int = 1,
+    logical_date: datetime = datetime.now(),
 ):
     """Genera datos de prueba
 
@@ -677,7 +678,7 @@ def generate_data(
         timespan (int): Duración de la simulación en días
     """
 
-    sim_current_date = datetime.now() - timedelta(days=1) - timedelta(days=timespan)
+    sim_current_date = logical_date - timedelta(days=1) - timedelta(days=timespan)
 
     new_data = {}
     new_data["usrs"] = []
@@ -726,7 +727,7 @@ def generate_data(
     logger.info("Simulating time passing for %s days", timespan)
     # Simular el paso del tiempo
     for days in range(timespan):
-        sim_current_date = datetime.now() - timedelta(days=1) - timedelta(days=days)
+        sim_current_date = logical_date - timedelta(days=1) - timedelta(days=days)
         logger.info("Date: %s", sim_current_date)
 
         if days > 30:
@@ -813,5 +814,5 @@ def generate_data(
                     pass
 
 
-if __name__ == "__main__":
-    generate_data()
+# if __name__ == "__main__":
+# generate_data()

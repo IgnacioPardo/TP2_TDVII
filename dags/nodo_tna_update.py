@@ -28,7 +28,7 @@ pg = create_engine(POSTGRES_CONN_STRING)
 Session = sessionmaker(bind=pg)
 
 
-# Read transactions from the last n (40) days
+# Read transactions from the last n (30) days
 # Calculate volume of transactions per day
 # Predict volume of transactions for the next 7 days
 
