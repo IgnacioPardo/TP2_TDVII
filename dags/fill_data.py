@@ -47,10 +47,13 @@ with DAG(
         task_id="branch_ultimo_dia_mes",
         follow_task_ids_if_true="generate_monthly_report",
         follow_task_ids_if_false="dummy",
-        # target_upper=pendulum.now()._last_of_month() + pendulum.duration(days=1),
-        # target_lower=pendulum.now()._last_of_month() - pendulum.duration(days=1),
-        target_upper=pendulum.now() + pendulum.duration(days=1),
-        target_lower=pendulum.now() - pendulum.duration(days=1),
+
+        target_upper=pendulum.now()._last_of_month() + pendulum.duration(days=1),
+        target_lower=pendulum.now()._last_of_month() - pendulum.duration(days=1),
+
+        # Para testear sin esperar al último día del mes
+        # target_upper=pendulum.now() + pendulum.duration(days=1),
+        # target_lower=pendulum.now() - pendulum.duration(days=1),
     )
 
     monthly_report = PythonOperator(
