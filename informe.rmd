@@ -262,6 +262,8 @@ El modelo `all_claves` unifica todas las claves del sistema en una única vista.
 
 En cada modelo se testea para cada campo donde corresponda que no haya valores nulos, y que aquellos valores que deban ser únicos como por ejemplo las claves uniformes, lo sean.
 
+Para los modelos que realizan pocas transformaciones y que consumen los otros modelos decidimos materializarlos en vistas, dado que requieren poco procesamiento. Este es el caso de all_claves, claves_bank_accs, claves_cards, claves_providers, claves_rendimientos y claves_transactions. Para el resto de los modelos la materialización es de tabla, ya que los datos no necesitan estar totalmente actualizados y deben ser consistentes a lo largo del día para los equipos de análisis.
+
 ## Conclusiones
 
 En este informe se presentó la arquitectura, los flujos de datos y los procesos de gobernanza para el modelo de datos de la plataforma MercadoPago. Se describió el origen de los datos, el modelado de datos, el linaje de los datos, los usos de los datos en las distintas etapas y la gobernanza del dato. Además, se detalló el flujo de datos a través de un pipeline de carga implementado en Airflow y se presentaron los modelos de DBT utilizados para el enriquecimiento de los datos.
