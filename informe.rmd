@@ -137,28 +137,17 @@ _¿Cómo es el linaje de los datos desde su origen hasta que las distintas aplic
 4. Transformaciones con DBT: los datos cargados se transforman para obtener información útil y generar reportes.
 5. Consumo por aplicación: los datos transformados son consumidos por aplicaciones de análisis y reportes al igual que por la aplicación de los usuarios.
 
-### Usos de los datos en las distintas etapas
-
-_¿Cuáles son los usos que tienen los datos en las distintas etapas de procesamiento?_
-
-### Gobernanza del dato
-
-_¿Cómo es la gobernanza del dato? ¿Cuáles son los roles y qué tipos de permisos tienen sobre los datos?_
-
-Dentro de la organización existen distintos equipos y servicios que requieren acceso de lectura a los datos. Para tener un estricto control sobre el acceso a los datos se definen roles dentro de tres grupos: Administrador de la BD, Usuario final y Análisis. Dentro da cada grupo se definen roles específicos que otrogan los permisos necesarios para sus funciones. Dentro de Administrador de BD van a estar los roles con mayores permisos para poder administrar el servicio, aunque siempre limitados a la necesidad de ese rol. Dentro de Usuario final van a estar principalmente los sistemas que interactuan con la aplicación de los usuarios; estos roles serán los que tendrán acceso a información sensible del usuario. Finalmente dentro de Análisis van a estar los roles principalmente de los equipos internos de la organización, que tendrán acceso a información más procesada y menos cruda, sin poder acceder a los datos sensibles de los usuarios.  
-
-Administrador del Sistema: Analista de Datos:Usuario Final:
-
 \newpage
 
 ## 2. Flujo de datos
+
+_¿Cuáles son los usos que tienen los datos en las distintas etapas de procesamiento?_
 
 ### Implementación del pipeline de carga
 
 El pipeline de carga de datos está implementado en Airflow con el siguiente DAG:
 
 ![DAG](dag_img.png)
-
 
 A continuación se detalla la función de cada nodo:
 
@@ -222,6 +211,12 @@ Una vez generado el reporte mensual, el mismo se envía por email a quien se hay
 
 Decidimos implementarlo con una cadencia diaria dado que genera reportes y predicciones que no necesitan mayor frecuencia. 
 
+### Gobernanza del dato
+
+_¿Cómo es la gobernanza del dato? ¿Cuáles son los roles y qué tipos de permisos tienen sobre los datos?_
+
+Dentro de la organización existen distintos equipos y servicios que requieren acceso de lectura a los datos. Para tener un estricto control sobre el acceso a los datos se definen roles dentro de tres grupos: Administrador de la BD, Usuario final y Análisis. Dentro da cada grupo se definen roles específicos que otrogan los permisos necesarios para sus funciones. Dentro de Administrador de BD van a estar los roles con mayores permisos para poder administrar el servicio, aunque siempre limitados a la necesidad de ese rol. Dentro de Usuario final van a estar principalmente los sistemas que interactuan con la aplicación de los usuarios; estos roles serán los que tendrán acceso a información sensible del usuario. Finalmente dentro de Análisis van a estar los roles principalmente de los equipos internos de la organización, que tendrán acceso a información más procesada y menos cruda, sin poder acceder a los datos sensibles de los usuarios.  
+
 \newpage
 
 ## 3. Enriquecimiento de Datos con DBT
@@ -254,13 +249,21 @@ Este modelo proporciona un resumen de las transacciones realizadas a los proveed
 
 ### Claves Uniformes (CBUs y CVUs)
 
-A partir de los siguientes modelos:
+A partir de los siguientes modelos que crean vistas materializadas:
 
-- `claves_cards`: Consolida las claves únicas de las tarjetas de crédito.
-- `claves_users`: Consolida las claves únicas de los usuarios.
-- `claves_providers`: Consolida las claves únicas de los proveedores de servicios.
-- `claves_rendimientos`: Consolida las claves únicas de los rendimientos de inversión.
-- `claves_bank_accs`: Consolida las claves únicas de las cuentas bancarias.
-- `claves_transactions`: Consolida las claves únicas de las transacciones.
+- `claves_cards`: Consolida las claves uniformes de las tarjetas de crédito.
+- `claves_users`: Consolida las claves uniformes de los usuarios.
+- `claves_providers`: Consolida los CBUs de los proveedores de servicios.
+- `claves_rendimientos`: Consolida los CVUs de los rendimientos de inversión.
+- `claves_bank_accs`: Consolida los CBUs de las cuentas bancarias.
+- `claves_transactions`: Consolida las claves uniformes de las transacciones.
 
-El modelo `all_claves` consolida todas las claves del sistema en una única vista. Esto facilita la realización de análisis y verificaciones de integridad de los datos, asegurando que todas las claves cumplan con el formato esperado. Se verifica que las claves cumplan el formato de los CBUs y CVUs en Argentina.
+El modelo `all_claves` unifica todas las claves del sistema en una única vista. Esto facilita la realización de análisis y verificaciones de integridad de los datos, asegurando que todas las claves cumplan con el formato esperado. Se verifica usando testing de DBT que las claves cumplan el formato de los CBUs y CVUs en Argentina.
+
+En cada modelo se testea para cada campo donde corresponda que no haya valores nulos, y que aquellos valores que deban ser únicos como por ejemplo las claves uniformes, lo sean.
+
+## Conclusiones
+
+En este informe se presentó la arquitectura, los flujos de datos y los procesos de gobernanza para el modelo de datos de la plataforma MercadoPago. Se describió el origen de los datos, el modelado de datos, el linaje de los datos, los usos de los datos en las distintas etapas y la gobernanza del dato. Además, se detalló el flujo de datos a través de un pipeline de carga implementado en Airflow y se presentaron los modelos de DBT utilizados para el enriquecimiento de los datos.
+
+La arquitectura propuesta permite la generación, procesamiento y análisis de datos en tiempo real, garantizando la disponibilidad de información actualizada y precisa para la toma de decisiones. Los flujos de datos implementados permiten la generación de reportes, predicciones y análisis detallados sobre el comportamiento de los usuarios y el rendimiento de la plataforma. La gobernanza del dato asegura la seguridad y privacidad de la información, garantizando que los datos sean utilizados de manera responsable y ética.
