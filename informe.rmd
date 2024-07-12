@@ -233,11 +233,15 @@ Este modelo analiza el uso de las tarjetas de crédito por parte de los usuarios
 
 ### Usuarios con alto uso de tarjetas de crédito: high_usage_credit_card_users
 
-Este modelo identifica a los usuarios que tienen un alto uso de sus tarjetas de crédito y crea una vista. Al analizar los patrones de uso, se puede determinar qué usuarios están utilizando intensivamente sus tarjetas y potencialmente necesitan atención o promociones especiales. Ademas podrían ser potenciales clientes de productos financieros como MercadoCrédito.
+Este modelo genera una vista materializada para identificar a los usuarios que tienen un alto uso de sus tarjetas de crédito a partir de la tabla creada en user_credit_card_usage. Al analizar los patrones de uso, se puede determinar qué usuarios están utilizando intensivamente sus tarjetas y potencialmente necesitan atención o promociones especiales. Ademas podrían ser potenciales clientes de productos financieros como MercadoCrédito.
 
 ### Balances de cuentas de usuario: user_account_balances
 
 Este modelo calcula y presenta los saldos de las cuentas de los usuarios. Incluye información sobre los saldos actuales, permitiendo el monitoreo y análisis del estado financiero de cada usuario en el sistema.
+
+### Historial de transacciones de usuario: user_transaction_history
+
+Compila un historial de transacciones para cada usuario, proporcionando una visión integral de la actividad transaccional, tanto como origen como destino de las transacciones. La información se obtiene de las tablas Transaccion y Usuario. Resulta en una vista materializada para facilitar el análisis y el consumo de datos.
 
 ### Performance de inversiones por usuario: user_investment_performance_summary
 
@@ -262,7 +266,9 @@ El modelo `all_claves` unifica todas las claves del sistema en una única vista.
 
 En cada modelo se testea para cada campo donde corresponda que no haya valores nulos, y que aquellos valores que deban ser únicos como por ejemplo las claves uniformes, lo sean.
 
-Para los modelos que realizan pocas transformaciones y que consumen los otros modelos decidimos materializarlos en vistas, dado que requieren poco procesamiento. Este es el caso de all_claves, claves_bank_accs, claves_cards, claves_providers, claves_rendimientos y claves_transactions. Para el resto de los modelos la materialización es de tabla, ya que los datos no necesitan estar totalmente actualizados y deben ser consistentes a lo largo del día para los equipos de análisis.
+Para los modelos que realizan pocas transformaciones pero se consumen en masa decidimos materializarlos en vistas, dado que requieren poco procesamiento y breve disponibilidad. Este es el caso de all_claves, claves_bank_accs, claves_cards, claves_providers, claves_rendimientos y claves_transactions. Ademas optamos por una vista materializada en el caso de user_transaction_history, dado que es una tabla que se consume mucho.
+
+Para el resto de los modelos la materialización es de tabla, ya que los datos no necesitan estar totalmente actualizados y deben ser consistentes a lo largo del día para los equipos de análisis.
 
 ## Conclusiones
 

@@ -1,4 +1,4 @@
-{{ config(materialized='view') }}
+{{ config(materialized='table') }}
 
 WITH all_claves AS (
     SELECT clave_uniforme AS clave FROM {{ ref('claves_users') }}

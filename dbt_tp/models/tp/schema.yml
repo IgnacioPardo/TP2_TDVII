@@ -144,3 +144,31 @@ models:
           Seguido por al menos 13 dígitos, como máximo 14
         tests:
           - not_null
+  - name: transaction_history
+    description: >
+      Modelo que compila un historial de transacciones para cada usuario, proporcionando una visión integral de la actividad transaccional tanto como origen como destino de las transacciones. Incluye detalles de la transacción como monto, fecha, descripción, estado, si se realizó con tarjeta de crédito e intereses aplicados.
+    columns:
+      - name: transaction_id
+        description: ID de la transacción.
+      - name: user_id
+        description: Clave única del usuario.
+      - name: amount
+        description: Monto de la transacción.
+      - name: date
+        description: Fecha de la transacción.
+      - name: description
+        description: Descripción de la transacción.
+      - name: status
+        description: Estado de la transacción.
+      - name: is_credit_card
+        description: Indica si la transacción se realizó con tarjeta de crédito.
+      - name: card_number
+        description: Número de la tarjeta utilizada en la transacción.
+      - name: interest
+        description: Intereses aplicados en la transacción.
+      - name: user_name
+        description: Nombre del usuario.
+      - name: user_surname
+        description: Apellido del usuario.
+      - name: user_email
+        description: Correo electrónico del usuario.
