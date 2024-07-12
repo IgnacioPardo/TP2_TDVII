@@ -5,7 +5,7 @@
 - Ignacio Pardo | 21R1160 | [ipardo@mail.utdt.edu](mailto:ipardo@mail.utdt.edu)
 - Juan Ignacio Silvestri | 21Q111 | [jsilvestri@mail.utdt.edu](mailto:jsilvestri@mail.utdt.edu)
 
-[Link al Informe](https://github.com/IgnacioPardo/TP2_TDVII/blob/027f507e57b7c34011382553b30ab076d7662d6c/informe.pdf)
+[Link al Informe](https://github.com/IgnacioPardo/TP2_TDVII/blob/main/informe.pdf)
 
 ## Estado
 
